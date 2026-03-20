@@ -1,15 +1,19 @@
 # ── Katrix POS — Backend ──────────────────────────────────────────
-FROM node:20-alpine
+# Usamos node:20-slim (Debian) — mucho más compatible con módulos nativos
+# como sqlite3 que tienen bindings C++ (Alpine/musl da problemas con estos)
+FROM node:20-slim
 
 WORKDIR /app
 
-# Dependencias de compilación para sqlite3 (bindings nativos C++)
-RUN apk add --no-cache python3 make g++
+# Herramientas de build para sqlite3 (Debian)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3 make g++ && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copiar solo package.json (sin package-lock para evitar conflictos cross-platform)
+# Copiar solo package.json (sin lock de Windows para evitar conflictos)
 COPY package.json ./
 
-# Instalar desde cero en Linux (genera lockfile propio)
+# Instalar dependencias
 RUN npm install --omit=dev
 
 # Copiar código fuente
