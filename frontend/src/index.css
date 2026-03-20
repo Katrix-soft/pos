@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #f5f7fa;
+  --color-primary-100: #eaeef4;
+  --color-primary-200: #d1dae6;
+  --color-primary-300: #a8bacf;
+  --color-primary-400: #7a96b3;
+  --color-primary-500: #587799;
+  --color-primary-600: #465e7d;
+  --color-primary-700: #3a4c65;
+  --color-primary-800: #334155;
+  --color-primary-900: #2d3848;
+  --color-primary-950: #1e2530;
+  --color-accent: #f59e0b;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-800 text-white px-6 py-3 rounded-xl font-semibold shadow-md active:scale-95 transition-all hover:bg-primary-700 disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-xl font-semibold shadow-sm active:scale-95 transition-all hover:bg-slate-50;
+  }
+  .card {
+    @apply bg-white rounded-2xl p-6 shadow-sm border border-slate-100;
+  }
+  .input-field {
+    @apply w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary-400 transition-all;
+  }
+}
+
+/* ── html5-qrcode: suprimir UI nativa, exponer solo el video ── */
+#katrix-qr-region {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+/* Ocultar todos los controles generados por la librería */
+#katrix-qr-region > img,
+#katrix-qr-region > div[id$="--header"],
+#katrix-qr-region > div[id$="--dashboard"],
+#katrix-qr-region > div[id$="--status"],
+#katrix-qr-region span,
+#katrix-qr-region select,
+#katrix-qr-region button,
+#katrix-qr-region p {
+  display: none !important;
+}
+/* El video debe cubrir todo el contenedor */
+#katrix-qr-region video {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 0 !important;
+}
+
+/* Custom scrollbar for desktop */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 rounded-full;
+}

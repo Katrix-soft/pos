@@ -1,0 +1,18 @@
+# Dependencias
+node_modules/
+
+# Base de datos local
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Variables de entorno — NUNCA subir .env real
+backend/.env
+
+# Build del frontend
+frontend/dist/
+
+# Logs
+*.log
+npm-debug.log*
