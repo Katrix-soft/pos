@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Herramientas de build para sqlite3 (Debian)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3 make g++ && \
+    apt-get install -y --no-install-recommends build-essential python3 && \
     rm -rf /var/lib/apt/lists/*
 
 # Copiar solo package.json (sin lock de Windows para evitar conflictos)
