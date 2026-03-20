@@ -3,17 +3,19 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# sqlite3 necesita compilar bindings nativos en C++
+# Dependencias de compilación para sqlite3 (bindings nativos C++)
 RUN apk add --no-cache python3 make g++
 
-# Instalar dependencias (con herramientas de build disponibles)
-COPY package*.json ./
-RUN npm ci --omit=dev
+# Copiar solo package.json (sin package-lock para evitar conflictos cross-platform)
+COPY package.json ./
+
+# Instalar desde cero en Linux (genera lockfile propio)
+RUN npm install --omit=dev
 
 # Copiar código fuente
 COPY . .
 
-# Directorio para la base de datos (montado como volumen)
+# Directorio para la base de datos SQLite (montado como volumen)
 RUN mkdir -p /data
 
 EXPOSE 5000
