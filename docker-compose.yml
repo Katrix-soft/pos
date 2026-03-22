@@ -1,37 +1,57 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: katrix-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: katrix_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - npm_network
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: katrix-backend
     restart: unless-stopped
+    depends_on:
+      - postgres
     environment:
       PORT: "5000"
       NODE_ENV: production
       JWT_SECRET: ${JWT_SECRET:-katrix_secret_key_change_me}
-      DB_PATH: /data/katrix.db
-    volumes:
-      - katrix_data:/data
+      DB_USER: postgres
+      DB_PASSWORD: postgrespassword
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: katrix_db
+      TZ: America/Argentina/Buenos_Aires
     networks:
       - npm_network
-    # No exponemos el puerto al host — el frontend nginx lo accede internamente
 
-  frontend:
+  posbarber_web:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: katrix-frontend
+    container_name: posbarber_web
     restart: unless-stopped
     depends_on:
       - backend
+    ports:
+      - "8080:80"
+    environment:
+      - TZ=America/Argentina/Buenos_Aires
     networks:
       - npm_network
-    # Caddy-proxy enruta el dominio a este contenedor por nombre
 
 volumes:
-  katrix_data:
+  postgres_data:
     driver: local
 
 networks:
   npm_network:
-    external: true   # Red ya creada por caddy-proxy / Nginx Proxy Manager
+    external: true
