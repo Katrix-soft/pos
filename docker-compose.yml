@@ -33,11 +33,11 @@ services:
     networks:
       - npm_network
 
-  posbarber_web:
+  katrix_pos_web:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: posbarber_web
+    container_name: katrix_pos_web
     restart: unless-stopped
     depends_on:
       - backend
