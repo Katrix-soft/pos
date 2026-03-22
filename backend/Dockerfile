@@ -14,7 +14,7 @@ RUN apt-get update && \
 COPY package.json ./
 
 # Instalar dependencias
-RUN npm install --omit=dev
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Copiar código fuente
 COPY . .
