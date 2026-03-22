@@ -42,7 +42,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "8080:80"
+      - "8081:80"
     environment:
       - TZ=America/Argentina/Buenos_Aires
     networks:
