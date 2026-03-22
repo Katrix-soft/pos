@@ -11,6 +11,7 @@ const POS = () => {
   const [search, setSearch] = useState('');
   const [showScanner, setShowScanner] = useState(false);
   const [checkoutStatus, setCheckoutStatus] = useState(null);
+  const [isCheckoutMode, setIsCheckoutMode] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -78,6 +79,7 @@ const POS = () => {
       await apiService.createSale(sale);
       setCheckoutStatus('success');
       setCart([]);
+      setIsCheckoutMode(false);
       setTimeout(() => setCheckoutStatus(null), 3000);
     } catch (err) {
       alert('Pago registrado localmente (Modo Offline).');
@@ -107,66 +109,101 @@ const POS = () => {
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-140px)]">
-      <div className="flex-1 flex flex-col gap-6 overflow-hidden">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 flex items-center gap-4 bg-white px-6 py-4 rounded-3xl shadow-sm border border-slate-100">
-            <Search className="text-slate-400" size={20} />
-            <input 
-              type="text" 
-              placeholder="Buscar por nombre, SKU o color..." 
-              className="flex-1 outline-none text-lg font-medium"
-              value={search}
-              onChange={(e) => {
-                  const val = e.target.value;
-                  setSearch(val);
-                  // Auto-add if exact SKU match (for manual entry)
-                  const exact = variants.find(v => v.sku === val || v.barcode === val);
-                  if (exact) {
-                      addToCart(exact);
-                      setSearch('');
-                  }
-              }}
-            />
-          </div>
-          <button 
-            onClick={() => setShowScanner(true)}
-            className="p-4 bg-primary-800 text-white rounded-3xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
-          >
-            <QrCode size={24} />
-            <span className="md:hidden lg:inline font-bold">Escanear</span>
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto pr-2 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredVariants.map(v => (
-            <button 
-              key={v.id} 
-              onClick={() => addToCart(v)}
-              className="card text-left hover:border-primary-400 active:bg-slate-50 transition-all group p-6"
-            >
-              <div className="flex justify-between items-start mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                <span>{v.sku}</span>
-                <span className="bg-slate-100 px-2 py-0.5 rounded">{products.find(p => p.id === v.product_id)?.category}</span>
-              </div>
-              <h4 className="font-bold text-slate-800 line-clamp-2 text-lg leading-tight">{products.find(p => p.id === v.product_id)?.name}</h4>
-              <div className="flex items-center justify-between mt-4">
-                <div className="flex gap-2">
-                  <span className="text-[10px] bg-primary-50 text-primary-600 px-3 py-1 rounded-full font-black uppercase">{v.size}</span>
-                  <span className="text-[10px] bg-slate-100 px-3 py-1 rounded-full font-black uppercase text-slate-500">{v.color}</span>
-                </div>
-                <span className="text-xl font-black text-primary-800">${products.find(p => p.id === v.product_id)?.base_price}</span>
-              </div>
-            </button>
-          ))}
-          {filteredVariants.length === 0 && (
-            <div className="col-span-full flex flex-col items-center justify-center py-20 text-slate-300">
-               <Search size={64} strokeWidth={1} />
-               <p className="mt-4 font-medium text-lg">No se encontraron productos</p>
-               <p className="text-sm">Prueba con otro término o escanea el código</p>
+      {!isCheckoutMode ? (
+        <div className="flex-1 flex flex-col gap-6 overflow-hidden animate-in fade-in duration-500">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 flex items-center gap-4 bg-white px-6 py-4 rounded-3xl shadow-sm border border-slate-100">
+              <Search className="text-slate-400" size={20} />
+              <input 
+                type="text" 
+                placeholder="Buscar por nombre, SKU o color..." 
+                className="flex-1 outline-none text-lg font-medium"
+                value={search}
+                onChange={(e) => {
+                    const val = e.target.value;
+                    setSearch(val);
+                    const exact = variants.find(v => v.sku === val || v.barcode === val);
+                    if (exact) {
+                        addToCart(exact);
+                        setSearch('');
+                    }
+                }}
+              />
             </div>
-          )}
+            <button 
+              onClick={() => setShowScanner(true)}
+              className="p-4 bg-primary-800 text-white rounded-3xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              <QrCode size={24} />
+              <span className="md:hidden lg:inline font-bold">Escanear</span>
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto pr-2 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {filteredVariants.map(v => (
+              <button 
+                key={v.id} 
+                onClick={() => addToCart(v)}
+                className="card text-left hover:border-primary-400 active:bg-slate-50 transition-all group p-6"
+              >
+                <div className="flex justify-between items-start mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  <span>{v.sku}</span>
+                  <span className="bg-slate-100 px-2 py-0.5 rounded">{products.find(p => p.id === v.product_id)?.category}</span>
+                </div>
+                <h4 className="font-bold text-slate-800 line-clamp-2 text-lg leading-tight">{products.find(p => p.id === v.product_id)?.name}</h4>
+                <div className="flex items-center justify-between mt-4">
+                  <div className="flex gap-2">
+                    <span className="text-[10px] bg-primary-50 text-primary-600 px-3 py-1 rounded-full font-black uppercase">{v.size}</span>
+                    <span className="text-[10px] bg-slate-100 px-3 py-1 rounded-full font-black uppercase text-slate-500">{v.color}</span>
+                  </div>
+                  <span className="text-xl font-black text-primary-800">${products.find(p => p.id === v.product_id)?.base_price}</span>
+                </div>
+              </button>
+            ))}
+            {filteredVariants.length === 0 && (
+              <div className="col-span-full flex flex-col items-center justify-center py-20 text-slate-300">
+                 <Search size={64} strokeWidth={1} />
+                 <p className="mt-4 font-medium text-lg">No se encontraron productos</p>
+                 <p className="text-sm">Prueba con otro término o escanea el código</p>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-[40px] border border-slate-100 shadow-sm animate-in zoom-in-95 duration-500">
+           <div className="max-w-md w-full p-12 text-center space-y-8">
+              <div className="space-y-2">
+                 <h2 className="text-4xl font-black text-slate-800 tracking-tighter">Resumen de Venta</h2>
+                 <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em]">Verifique los productos antes de cobrar</p>
+              </div>
+              
+              <div className="bg-slate-50 rounded-[2.5rem] p-8 space-y-4 max-h-[40vh] overflow-y-auto">
+                 {cart.map(item => (
+                   <div key={item.variant_id} className="flex justify-between items-center text-sm">
+                      <div className="text-left">
+                         <p className="font-bold text-slate-700">{item.name}</p>
+                         <p className="text-[10px] text-slate-400">{item.quantity} x ${item.price}</p>
+                      </div>
+                      <p className="font-black text-slate-800">${(item.quantity * item.price).toFixed(2)}</p>
+                   </div>
+                 ))}
+              </div>
+
+              <div className="pt-4 space-y-4">
+                 <div className="flex justify-between items-center px-4">
+                    <span className="text-slate-400 font-black uppercase text-[10px]">Total Final</span>
+                    <span className="text-5xl font-black text-primary-900 tracking-tighter">${total.toFixed(2)}</span>
+                 </div>
+                 <button 
+                  onClick={() => setIsCheckoutMode(false)}
+                  className="w-full py-4 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-primary-800 transition-colors"
+                 >
+                    ← Volver a la lista
+                 </button>
+              </div>
+           </div>
+        </div>
+      )}
 
       <div className="w-full lg:w-[400px] flex flex-col bg-white rounded-[40px] shadow-2xl overflow-hidden border border-slate-100">
         <div className="p-8 border-b border-slate-50">
@@ -209,28 +246,54 @@ const POS = () => {
           )}
         </div>
 
-        <div className="p-8 bg-slate-50">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-slate-500 font-bold uppercase tracking-widest text-xs">Total a Pagar</span>
-            <span className="text-4xl font-black text-primary-900">${total.toFixed(2)}</span>
+        <div className="p-8 bg-slate-50 space-y-4 border-t border-slate-100">
+          <div className="flex justify-between items-center bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+            <div className="absolute inset-y-0 left-0 w-2 bg-primary-800 transition-all group-hover:w-4"></div>
+            <div className="pl-2">
+              <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px] block mb-1">Total a cobrar</span>
+              <span className="text-4xl font-black text-primary-950 tracking-tighter">${total.toFixed(2)}</span>
+            </div>
+            <div className="text-right">
+               <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest bg-primary-50 px-2 py-1 rounded-lg">{cart.length} prendas</span>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <button 
-              disabled={cart.length === 0 || checkoutStatus}
-              onClick={() => handleCheckout('Efectivo')}
-              className="flex flex-col items-center gap-2 bg-white hover:bg-emerald-50 hover:border-emerald-200 border border-slate-200 p-4 rounded-3xl transition-all active:scale-95 disabled:opacity-50"
-            >
-              <Banknote className="text-emerald-500" />
-              <span className="text-xs font-black uppercase text-slate-600">Efectivo</span>
-            </button>
-            <button 
-              disabled={cart.length === 0 || checkoutStatus}
-              onClick={() => handleCheckout('Transferencia')}
-              className="flex flex-col items-center gap-2 bg-white hover:bg-sky-50 hover:border-sky-200 border border-slate-200 p-4 rounded-3xl transition-all active:scale-95 disabled:opacity-50"
-            >
-              <CreditCard className="text-sky-500" />
-              <span className="text-xs font-black uppercase text-slate-600">Transf.</span>
-            </button>
+
+          <div className="space-y-4 pt-2">
+            {cart.length > 0 ? (
+              <div className="grid grid-cols-1 gap-4 animate-in slide-in-from-bottom duration-500">
+                {!isCheckoutMode ? (
+                  <button 
+                    onClick={() => setIsCheckoutMode(true)}
+                    className="w-full py-6 bg-primary-800 text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-primary-900/30 hover:bg-black transition-all transform hover:-translate-y-1 active:translate-y-0"
+                  >
+                    Cobrar Total
+                  </button>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    <button 
+                      disabled={checkoutStatus}
+                      onClick={() => handleCheckout('Efectivo')}
+                      className="group/btn relative flex flex-col items-center gap-3 bg-white hover:bg-emerald-500 border-2 border-emerald-50 p-6 rounded-[2.5rem] transition-all active:scale-95 shadow-xl hover:shadow-emerald-900/20"
+                    >
+                      <Banknote className="text-emerald-500 group-hover/btn:text-white transition-colors" size={32} />
+                      <span className="text-[10px] font-black uppercase text-slate-700 group-hover/btn:text-white transition-colors">Efectivo</span>
+                    </button>
+                    <button 
+                      disabled={checkoutStatus}
+                      onClick={() => handleCheckout('Transferencia')}
+                      className="group/btn relative flex flex-col items-center gap-3 bg-white hover:bg-sky-500 border-2 border-sky-50 p-6 rounded-[2.5rem] transition-all active:scale-95 shadow-xl hover:shadow-sky-900/20"
+                    >
+                      <CreditCard className="text-sky-500 group-hover/btn:text-white transition-colors" size={32} />
+                      <span className="text-[10px] font-black uppercase text-slate-700 group-hover/btn:text-white transition-colors">Transferencia</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="py-4 bg-slate-100/50 rounded-[2rem] border border-dashed border-slate-200 text-center">
+                 <p className="text-[10px] font-black uppercase text-slate-300 tracking-widest px-8">Agregue productos para habilitar el cobro</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

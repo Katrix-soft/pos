@@ -26,6 +26,36 @@ export const apiService = {
     }
   },
 
+  async createProduct(product) {
+    try {
+      const res = await api.post('/products', product);
+      await db.products.put(res.data);
+      return res.data;
+    } catch (error) {
+      const localProduct = { ...product, id: crypto.randomUUID(), status: 'pending' };
+      await db.products.add(localProduct);
+      return localProduct;
+    }
+  },
+
+  async updateProduct(id, product) {
+    try {
+      await api.put(`/products/${id}`, product);
+      await db.products.update(id, product);
+    } catch (error) {
+      await db.products.update(id, { ...product, status: 'pending' });
+    }
+  },
+
+  async deleteProduct(id) {
+    try {
+      await api.delete(`/products/${id}`);
+      await db.products.delete(id);
+    } catch (error) {
+      // Handle offline delete if needed
+    }
+  },
+
   async getVariants() {
     try {
       const res = await api.get('/variants');
@@ -36,10 +66,41 @@ export const apiService = {
     }
   },
 
+  async createVariant(variant) {
+    try {
+      const res = await api.post('/variants', variant);
+      await db.variants.put(res.data);
+      return res.data;
+    } catch (error) {
+      const localVariant = { ...variant, id: crypto.randomUUID(), status: 'pending' };
+      await db.variants.add(localVariant);
+      return localVariant;
+    }
+  },
+
+  async updateVariant(id, variant) {
+    try {
+      await api.put(`/variants/${id}`, variant);
+      await db.variants.update(id, variant);
+      return { ...variant, id };
+    } catch (error) {
+      await db.variants.update(id, { ...variant, status: 'pending' });
+      return { ...variant, id };
+    }
+  },
+
+  async deleteVariant(id) {
+    try {
+      await api.delete(`/variants/${id}`);
+      await db.variants.delete(id);
+    } catch (error) {
+      // Handle offline delete
+    }
+  },
+
   async getSales() {
     try {
       const res = await api.get('/sales');
-      // Update local synced sales
       await db.sales.bulkPut(res.data.map(s => ({ ...s, status: 'synced' })));
       return res.data;
     } catch (error) {
