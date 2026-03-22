@@ -15,6 +15,7 @@ app.use(express.json());
 
 // Routes placeholders
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/webauthn', require('./routes/webauthn'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/variants', require('./routes/variants'));
 app.use('/api/sales', require('./routes/sales'));

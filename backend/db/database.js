@@ -96,8 +96,23 @@ const initDb = async (retries = 5) => {
                     id TEXT PRIMARY KEY,
                     username TEXT UNIQUE NOT NULL,
                     password TEXT NOT NULL,
-                    role TEXT DEFAULT 'admin'
+                    role TEXT DEFAULT 'admin',
+                    current_challenge TEXT
                 )`);
+
+                // WebAuthn Credentials
+                await client.query(`CREATE TABLE IF NOT EXISTS webauthn_credentials (
+                    id TEXT PRIMARY KEY,
+                    user_id TEXT NOT NULL,
+                    public_key TEXT NOT NULL,
+                    counter INTEGER DEFAULT 0,
+                    transports TEXT DEFAULT '["internal"]',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                )`);
+
+                // Ensure current_challenge exists on users table (Migration)
+                await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS current_challenge TEXT`);
 
                 await client.query('COMMIT');
                 console.log('Database initialized successfully');
